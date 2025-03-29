@@ -2,7 +2,7 @@
 Lifts a compile-time object instance to AST
 
 ## Example
-```
+```nim
 type
   SomeType = object
     name: string
