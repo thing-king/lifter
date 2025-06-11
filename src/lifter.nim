@@ -1,12 +1,15 @@
 import macros
 import strutils
 
-macro genLift*(T: typedesc): untyped =
+
+macro genLiftImpl(T: typedesc, exported: static bool): untyped =
+  let procName = if exported: nnkPostfix.newTree(ident("*"), ident("fullRepr")) else: ident("fullRepr")
+
   result = quote do:
-    proc fullRepr*[T](x: T): string =
+    proc `procName`[T](x: T): string =
       raise newException(ValueError, "Missing `genLift(" & $T & ")` macro call.")
     
-    proc fullRepr*(x: `T`): string =
+    proc `procName`(x: `T`): string =
       proc doRepr(x: auto): string =
         when x is NimNode:
           raise newException(ValueError, "Cannot lift NimNode, use `pkg/jsony_plus/serialized_node` to serialize.")
@@ -39,10 +42,21 @@ macro genLift*(T: typedesc): untyped =
           
       return doRepr(x)
 
+macro genLift*(T: typedesc): untyped =
+  # Call the implementation macro with the correct NimNode construction
+  result = newCall(ident("genLiftImpl"), T, newLit(true))
+
+macro genPrivateLift*(T: typedesc): untyped =
+  # Call the implementation macro with the correct NimNode construction  
+  result = newCall(ident("genLiftImpl"), T, newLit(false))
+
 proc lift*[T](item: T): NimNode =
   return parseExpr(item.fullRepr)
 
 
+
+# proc helloWorld*(): string =
+#   "hello world 4"
 
 # import pkg/jsony_plus/serialized_node
 

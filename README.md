@@ -1,26 +1,31 @@
 # lifter
-Lifts a compile-time object instance to AST
+Converts compile-time objects to AST constructor syntax for macro code generation.
 
 ## Example
+
 ```nim
-type
-  SomeType = object
-    name: string
-    value: string
+type Person = object
+  name: string
+  age: int
 
 import pkg/lifter
-genLift(Type)  # allows lifting
+genLift(Person)  # enables lifting for Person type
 
+macro buildPerson(): untyped =
+  let someone = Person(name: "Alice", age: 30)
+  result = someone.lift()  # becomes: Person(name: "Alice", age: 30)
 
-macro someMacro(): untyped =
-  let compileTimeType = SomeType(name: "Hello", value: "World")
-
-  result = compileTimeType.lift()  # lifts here
-
-
-let someType = someMacro()
-echo someType
+let alice = buildPerson()
+echo alice  # Person(name: "Alice", age: 30)
 ```
 
-### Future
- - Reverse lifting
+## Usage
+
+```nim
+genLift(MyType)        # exported fullRepr (for libraries)
+genPrivateLift(MyType) # private fullRepr (for internal use)
+```
+
+## Roadmap
+
+- Reverse lifting (AST → object instances)
