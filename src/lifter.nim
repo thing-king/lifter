@@ -2,7 +2,7 @@ import macros
 import strutils
 
 
-macro genLiftImpl(T: typedesc, exported: static bool): untyped =
+macro genLiftImpl*(T: typedesc, exported: static bool): untyped =
   let procName = if exported: nnkPostfix.newTree(ident("*"), ident("fullRepr")) else: ident("fullRepr")
 
   result = quote do:
